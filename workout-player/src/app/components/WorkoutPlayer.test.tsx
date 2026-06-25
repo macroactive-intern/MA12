@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import WorkoutPlayer from './WorkoutPlayer'
 
 const singleExercise = [{ name: 'Push-ups', workSeconds: 30, restSeconds: 10 }]
@@ -59,7 +58,6 @@ describe('Pause / Resume', () => {
 
     // Advance 5 seconds into the work phase
     act(() => { vi.advanceTimersByTime(5000) })
-    const countdownAfterWork = screen.getByTestId('countdown').textContent
 
     // Pause
     fireEvent.click(screen.getByRole('button', { name: /pause/i }))
@@ -143,7 +141,7 @@ describe('Auto transition', () => {
 
     // End of first work phase → rest starts
     act(() => { vi.advanceTimersByTime(30000) })
-    expect(screen.getByText(/^rest$/i)).toBeDefined()
+    expect(screen.getByText(/^rest$/i)).toBeDefined() // matches "Rest"
 
     // End of rest → second exercise work starts
     act(() => { vi.advanceTimersByTime(10000) })

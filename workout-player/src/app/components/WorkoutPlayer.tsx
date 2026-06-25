@@ -25,6 +25,10 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
   const remainingMsRef = useRef<number>(0)
   const exerciseIndexRef = useRef<number>(0)
   const phaseRef = useRef<Phase>('idle')
+  const exercisesRef = useRef<Exercise[]>(exercises)
+
+  // Keep exercisesRef current so interval callbacks never read a stale prop
+  exercisesRef.current = exercises
 
   useEffect(() => () => clearTimer(), [])
 
@@ -57,19 +61,20 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
   }
 
   function handlePhaseComplete() {
+    const exs = exercisesRef.current
     const idx = exerciseIndexRef.current
     if (phaseRef.current === 'work') {
-      if (idx === exercises.length - 1) {
+      if (idx === exs.length - 1) {
         phaseRef.current = 'complete'
         setPhase('complete')
       } else {
-        startPhase('rest', exercises[idx].restSeconds)
+        startPhase('rest', exs[idx].restSeconds)
       }
     } else {
       const next = idx + 1
       exerciseIndexRef.current = next
       setExerciseIndex(next)
-      startPhase('work', exercises[next].workSeconds)
+      startPhase('work', exs[next].workSeconds)
     }
   }
 
@@ -77,7 +82,7 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
     exerciseIndexRef.current = 0
     setExerciseIndex(0)
     setPaused(false)
-    startPhase('work', exercises[0].workSeconds)
+    startPhase('work', exercisesRef.current[0].workSeconds)
   }
 
   function pauseTimer() {
@@ -94,10 +99,11 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
 
   function skipRest() {
     const next = exerciseIndexRef.current + 1
+    if (next >= exercisesRef.current.length) return
     exerciseIndexRef.current = next
     setExerciseIndex(next)
     setPaused(false)
-    startPhase('work', exercises[next].workSeconds)
+    startPhase('work', exercisesRef.current[next].workSeconds)
   }
 
   if (exercises.length === 0) {
@@ -105,6 +111,7 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
   }
 
   const exercise = exercises[exerciseIndex]
+  const phaseLabel = phase === 'idle' ? 'Work' : phase.charAt(0).toUpperCase() + phase.slice(1)
 
   return (
     <div>
@@ -114,7 +121,7 @@ export default function WorkoutPlayer({ exercises }: WorkoutPlayerProps) {
         <>
           <p>Exercise {exerciseIndex + 1} of {exercises.length}</p>
           <h2>{exercise.name}</h2>
-          <p>{phase === 'idle' ? 'Work' : phase}</p>
+          <p>{phaseLabel}</p>
           <div data-testid="countdown">{countdown}</div>
 
           {phase === 'idle' && (
