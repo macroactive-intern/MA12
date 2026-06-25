@@ -143,7 +143,7 @@ describe('Auto transition', () => {
 
     // End of first work phase → rest starts
     act(() => { vi.advanceTimersByTime(30000) })
-    expect(screen.getByText(/rest/i)).toBeDefined()
+    expect(screen.getByText(/^rest$/i)).toBeDefined()
 
     // End of rest → second exercise work starts
     act(() => { vi.advanceTimersByTime(10000) })
